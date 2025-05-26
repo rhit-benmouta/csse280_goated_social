@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Interactive TA/Tutor Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #770000;
+      color: white;
+      padding: 20px;
+      text-align: left;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label, select {
+      font-size: 16px;
+      margin-right: 10px;
+    }
+
+    #calendar {
+      max-width: 900px;
+      margin: 20px auto 0;
+    }
+  </style>
+</head>
+<body>
+  <header>ROSE-HULMAN | TA/Tutor Calendar</header>
+
+  <div class="container">
+    <h1>Interactive TA/Tutor Calendar</h1>
+
+
+    <!-- TA Selector -->
+<div style="margin-top: 20px;">
+  <label for="taSelector">Select a TA:</label>
+  <select id="taSelector">
+    <option value="">-- Choose a TA --</option>
+    <!-- Options will be populated dynamically -->
+  </select>
+  <div id="taDriveLink" style="margin-top: 10px;"></div>
+</div>
+
+
+    <!-- Filter Dropdown -->
+    <label for="classFilter">Filter by Class:</label>
+    <select id="classFilter">
+      <option value="">All Classes</option>
+      <option value="ME">ME</option>
+      <option value="BE">BE</option>
+      <option value="CHEM">CHEM</option>
+      <option value="CSSE">CSSE</option>
+      <option value="HSSA">HSSA</option>
+      <option value="EE">EE</option>
+    </select>
+
+    <div id="calendar"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+  const classFilterEl = document.getElementById('classFilter');
+  let calendar;
+
+  loadTAs();
+  renderCalendar();
+
+  classFilterEl.addEventListener('change', () => {
+    calendar.refetchEvents();
+  });
+
+      function renderCalendar() {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'timeGridWeek',
+          nowIndicator: true,
+          selectable: true,
+          editable: false,
+
+          events: async (info, successCallback, failureCallback) => {
+            try {
+              const selectedClass = classFilterEl.value;
+              const query = selectedClass ? `?className=${encodeURIComponent(selectedClass)}` : '';
+              const res = await fetch(`/api/events${query}`);
+              const data = await res.json();
+              successCallback(data.events);
+            } catch (err) {
+              console.error('Failed to load events', err);
+              failureCallback(err);
+            }
+          },
+
+          select: async (info) => {
+            const summary = prompt('Event title:');
+            if (!summary) return;
+
+            const className = prompt('What class is this for? (ME, CSSE, etc)');
+            if (!className) return;
+
+            const res = await fetch('/api/events', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                summary,
+                start: info.startStr,
+                end: info.endStr,
+                className,
+              }),
+            });
+
+            const result = await res.json();
+            alert(result.message || 'Event added!');
+            calendar.refetchEvents();
+          },
+
+          eventClick: async (info) => {
+            const confirmed = confirm(`Delete event: "${info.event.title}"?`);
+            if (!confirmed) return;
+
+            try {
+              const res = await fetch(`/api/events/${info.event.id}`, {
+                method: 'DELETE',
+              });
+
+              const result = await res.json();
+              alert(result.message || 'Event deleted!');
+              info.event.remove();
+            } catch (err) {
+              console.error('Failed to delete event', err);
+              alert('Failed to delete event');
+            }
+          },
+        });
+
+        calendar.render();
+      }
+
+      // Re-render events when class filter changes
+      classFilterEl.addEventListener('change', () => {
+        calendar.refetchEvents();
+      });
+
+      renderCalendar();
+      // Load TA list and handle drive link display
+async function loadTAs() {
+  try {
+    const res = await fetch('http://localhost:20052/api/tas');
+    const tas = await res.json();
+
+    const taSelector = document.getElementById('taSelector');
+    const taDriveLink = document.getElementById('taDriveLink');
+
+    // Populate dropdown
+    tas.forEach(ta => {
+      const option = document.createElement('option');
+      option.value = ta.driveLink;
+      option.textContent = ta.name;
+      taSelector.appendChild(option);
+    });
+
+    // Handle selection change
+    taSelector.addEventListener('change', (e) => {
+      const link = e.target.value;
+      if (link) {
+        taDriveLink.innerHTML = `<a href="${link}" target="_blank">View ${taSelector.options[taSelector.selectedIndex].text}'s Drive</a>`;
+      } else {
+        taDriveLink.innerHTML = '';
+      }
+    });
+
+  } catch (err) {
+    console.error('Failed to load TA list', err);
+  }
+}
+    });
+  </script>
+</body>
+</html>

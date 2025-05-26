@@ -1,0 +1,59 @@
+<head>
+  <meta charset="utf-8" />
+  <title>Interactive Google Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #calendar { max-width: 900px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <h1>Interactive TA Calendar </h1>
+  <div id="calendar"></div>
+ 
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+ 
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        nowIndicator: true,
+        selectable: true,
+        editable: false,
+ 
+        events: async (info, successCallback, failureCallback) => {
+          try {
+            const res = await fetch('/api/events');
+            const data = await res.json();
+            successCallback(data.events);
+          } catch (err) {
+            console.error('Failed to load events', err);
+            failureCallback(err);
+          }
+        },
+ 
+        select: async (info) => {
+          const summary = prompt('Event title:');
+          if (!summary) return;
+ 
+          const res = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              summary,
+              start: info.startStr,
+              end: info.endStr,
+            }),
+          });
+ 
+          const result = await res.json();
+          alert(result.message || 'Event added!');
+          calendar.refetchEvents(); // reload calendar data
+        },
+      });
+ 
+      calendar.render();
+    });
+  </script>
+</body>

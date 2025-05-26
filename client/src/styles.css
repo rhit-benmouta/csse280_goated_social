@@ -1,0 +1,124 @@
+:root {
+  --rose-crimson: #800000;
+  --rose-gray: #2e2e2e;
+  --rose-light: #f9f9f9;
+  --rose-font: 'Open Sans', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--rose-font);
+  background-color: var(--rose-light);
+  color: var(--rose-gray);
+}
+
+header {
+  background-color: var(--rose-crimson);
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+  margin: 0 1rem;
+}
+
+main {
+  padding: 2rem;
+}
+
+footer {
+  background-color: var(--rose-gray);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.card {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+button {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--rose-crimson);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 1rem;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #861424;
+}
+
+.form-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-field label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-field input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.form-submit {
+  width: 100%;
+  background-color: var(--rose-crimson);
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-submit:hover {
+  background-color: #861424;
+}
+
+.input-error {
+  border: 2px solid red;
+  outline: none;
+}
+
+.error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: 600;
+}
+
